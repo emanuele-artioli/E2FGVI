@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=67", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "e2fgvi"
+version = "0.1.0"
+description = "E2FGVI video inpainting for arbitrary resolution videos"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [{name = "Runway", email = "support@runwayml.com"}]
+keywords = ["video", "inpainting", "computer-vision"]
+requires-python = ">=3.8"
+dependencies = [
+  "torch>=1.5",
+  "torchvision>=0.6",
+  "mmcv>=1.4,<2",
+  "opencv-python>=4.5",
+  "numpy>=1.19",
+  "scipy>=1.7",
+  "scikit-image>=0.16",
+  "pillow>=9.0",
+  "matplotlib>=3.5",
+  "tqdm>=4.60",
+  "gdown>=4.7",
+  "imageio>=2.9",
+  "tensorboard>=2.6"
+]
+
+[project.urls]
+Homepage = "https://github.com/emanuele-artioli/E2FGVI"
+Repository = "https://github.com/emanuele-artioli/E2FGVI"
+
+[project.scripts]
+e2fgvi = "e2fgvi.cli:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["e2fgvi", "e2fgvi.*"]
+
+[tool.setuptools.package-data]
+"e2fgvi" = [
+  "configs/*.json",
+  "examples/**/*",
+  "release_model/*",
+  "datasets/**/*.json",
+  "datasets/**/*.txt"
+]
