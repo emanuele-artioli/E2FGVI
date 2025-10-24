@@ -31,6 +31,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--set_size", action="store_true", default=False)
     parser.add_argument("--width", type=int)
     parser.add_argument("--height", type=int)
+    parser.add_argument(
+        "--save_frames",
+        type=str,
+        help="Directory to store reconstructed frames instead of encoding a result video.",
+    )
     return parser
 
 
@@ -188,23 +193,36 @@ def run_inference(args: argparse.Namespace) -> None:
                         + combined.astype(np.float32) * 0.5
                     )
 
-    print("Saving videos...")
-    save_dir = Path(__file__).resolve().parent / "results"
-    save_dir.mkdir(parents=True, exist_ok=True)
-    base_name = Path(args.video).name
-    save_name = base_name.replace(".mp4", "_results.mp4") if use_mp4 else f"{base_name}_results.mp4"
-    save_path = save_dir / save_name
-    writer = cv2.VideoWriter(
-        str(save_path),
-        cv2.VideoWriter_fourcc(*"mp4v"),
-        default_fps,
-        size,
-    )
-    for frame in range(video_length):
-        comp = comp_frames[frame].astype(np.uint8)  # type: ignore[union-attr]
-        writer.write(cv2.cvtColor(comp, cv2.COLOR_BGR2RGB))
-    writer.release()
-    print(f"Finish test! The result video is saved in: {save_path}.")
+    if args.save_frames:
+        frames_dir = Path(args.save_frames).expanduser().resolve()
+        frames_dir.mkdir(parents=True, exist_ok=True)
+        print(f"Saving reconstructed frames to {frames_dir}...")
+        for frame_idx, comp in enumerate(comp_frames):
+            frame_path = frames_dir / f"{frame_idx:05d}.png"
+            Image.fromarray(comp.astype(np.uint8)).save(frame_path)
+        print(f"Finish test! {video_length} frames written to {frames_dir}.")
+    else:
+        print("Saving videos...")
+        save_dir = Path(__file__).resolve().parent / "results"
+        save_dir.mkdir(parents=True, exist_ok=True)
+        base_name = Path(args.video).name
+        save_name = (
+            base_name.replace(".mp4", "_results.mp4")
+            if use_mp4
+            else f"{base_name}_results.mp4"
+        )
+        save_path = save_dir / save_name
+        writer = cv2.VideoWriter(
+            str(save_path),
+            cv2.VideoWriter_fourcc(*"mp4v"),
+            default_fps,
+            size,
+        )
+        for frame in range(video_length):
+            comp = comp_frames[frame].astype(np.uint8)  # type: ignore[union-attr]
+            writer.write(cv2.cvtColor(comp, cv2.COLOR_BGR2RGB))
+        writer.release()
+        print(f"Finish test! The result video is saved in: {save_path}.")
 
     print("Let us enjoy the result!")
     fig = plt.figure("Let us enjoy the result")
@@ -222,7 +240,7 @@ def run_inference(args: argparse.Namespace) -> None:
         imdata2.set_data(comp_frames[idx].astype(np.uint8))
 
     fig.tight_layout()
-    animation.FuncAnimation(fig, update, frames=len(frames_array), interval=50)
+    anim = animation.FuncAnimation(fig, update, frames=len(frames_array), interval=50)
     plt.show()
 
 
