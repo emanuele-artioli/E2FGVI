@@ -48,10 +48,12 @@ def get_ref_index(
                 ref_index.append(i)
     else:
         start_idx = max(0, frame_idx - ref_length * (num_ref // 2))
-        end_idx = min(length, frame_idx + ref_length * (num_ref // 2))
+        # Clamp end_idx to the last valid index (length - 1) to avoid out-of-range access
+        end_idx = min(length - 1, frame_idx + ref_length * (num_ref // 2))
         for i in range(start_idx, end_idx + 1, ref_length):
             if i not in neighbor_ids:
-                if len(ref_index) > num_ref:
+                # Guard so we don't append more than num_ref references
+                if len(ref_index) >= num_ref:
                     break
                 ref_index.append(i)
     return ref_index
