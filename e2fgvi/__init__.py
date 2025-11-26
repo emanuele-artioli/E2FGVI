@@ -12,4 +12,16 @@ def __getattr__(name: str):
     raise AttributeError(name)
 
 
-__all__ = ["__version__"]
+# Expose the main API
+from .inpaint import (
+    inpaint,
+    InpaintingConfig,
+    E2FGVIModel,
+)
+
+__all__ = [
+    "__version__",
+    "inpaint",
+    "InpaintingConfig",
+    "E2FGVIModel",
+]
